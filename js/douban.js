@@ -490,10 +490,11 @@ function renderDoubanCards(data, container) {
         
         card.innerHTML = `
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-<img src="https://images.weserv.nl/?url=${(item.cover || item.image || '').split('://')[1] || ''}" 
+<img src="${(item.cover || item.image || '').replace('img3.doubanio.com', 'img1.doubanio.com').replace('img1.doubanio.com', 'img2.doubanio.com')}" 
      alt="${safeTitle}" 
      class="w-full h-full object-cover" 
-     onerror="this.src='image/default-cover.png';"
+     referrerpolicy="no-referrer"
+     onerror="this.src='https://images.weserv.nl/?url=' + encodeURIComponent(this.src);"
      loading="lazy">
                      alt="${safeTitle}" 
                      class="w-full h-full object-cover" 
