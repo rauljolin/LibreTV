@@ -477,12 +477,16 @@ function renderDoubanCards(data, container) {
         const safeTitle = (item.title || "未知").replace(/"/g, '&quot;');
         
         // --- 核心修复逻辑 ---
-        // 1. 获取原始地址
-        const originalImg = item.cover || item.image || "";
-        // 2. 去掉协议头 (http/https)，防止代理节点拼接错误
-        const cleanUrl = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-        // 3. 使用目前最稳定的 Weserv 镜像节点进行强制代理
-        const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
+       // --- 物理级修复：强制代理 ---
+        let rawUrl = item.cover || item.image || "";
+        // 如果地址为空，直接给保底图，不走代理
+        if (!rawUrl) {
+            proxiedImg = 'image/default-cover.png';
+        } else {
+            // 彻底洗掉所有协议头和斜杠，只留纯域名路径
+            const cleanUrl = rawUrl.replace(/^https?:\/\//, '').replace(/^\/\//, '');
+            var proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
+        }
         
         card.innerHTML = `
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
