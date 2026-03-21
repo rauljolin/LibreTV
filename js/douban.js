@@ -474,11 +474,11 @@ function renderDoubanCards(data, container) {
         const card = document.createElement("div");
         card.className = "bg-[#111] rounded-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all shadow-md";
         
-        // 核心：强制转换所有豆瓣图片地址
+        // --- 核心修复：直接强制转换地址，不给它裂开的机会 ---
         const originalImg = item.cover || item.image || "";
         const cleanUrl = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-        // 换成这个最稳的镜像地址
-        const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}&default=https://flickzone.xyz/image/default-cover.png`;
+        // 使用全球最稳的 Weserv 节点进行中转
+        const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
         
         const safeTitle = (item.title || "未知").replace(/"/g, '&quot;');
         
@@ -486,7 +486,7 @@ function renderDoubanCards(data, container) {
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
                 <img src="${proxiedImg}" 
                      alt="${safeTitle}" 
-                     class="w-full h-full object-cover" 
+                     class="w-full h-full object-cover transition-opacity duration-300" 
                      onerror="this.src='image/default-cover.png';">
                 <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                     ★ ${item.rate || '0.0'}
@@ -499,7 +499,6 @@ function renderDoubanCards(data, container) {
     container.innerHTML = "";
     container.appendChild(fragment);
 }
-
 // 重置到首页
 function resetToHome() {
     resetSearchArea();
