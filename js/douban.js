@@ -462,7 +462,7 @@ async function fetchDoubanData(url) {
     }
 }
 
-// 重新开始的修复：在渲染时直接强制通过稳定代理中转
+// 重新开始的修复：直接在数据渲染阶段强制改写 URL
 function renderDoubanCards(data, container) {
     const fragment = document.createDocumentFragment();
     if (!data || !data.subjects || data.subjects.length === 0) {
@@ -474,10 +474,10 @@ function renderDoubanCards(data, container) {
         const card = document.createElement("div");
         card.className = "bg-[#111] rounded-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all shadow-md";
         
-        // --- 核心修复：直接强制转换地址，不给它裂开的机会 ---
+        // --- 核心修复：在这里直接强行改写图片地址 ---
         const originalImg = item.cover || item.image || "";
         const cleanUrl = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-        // 使用全球最稳的 Weserv 节点进行中转
+        // 使用 Weserv 镜像，这是目前过豆瓣防盗链最稳的方法
         const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
         
         const safeTitle = (item.title || "未知").replace(/"/g, '&quot;');
@@ -486,7 +486,7 @@ function renderDoubanCards(data, container) {
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
                 <img src="${proxiedImg}" 
                      alt="${safeTitle}" 
-                     class="w-full h-full object-cover transition-opacity duration-300" 
+                     class="w-full h-full object-cover" 
                      onerror="this.src='image/default-cover.png';">
                 <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                     ★ ${item.rate || '0.0'}
