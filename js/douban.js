@@ -476,28 +476,19 @@ function renderDoubanCards(data, container) {
         
         const safeTitle = (item.title || "未知").replace(/"/g, '&quot;');
         
-        // --- 核心修复逻辑 ---
-       // --- 物理级修复：强制代理 ---
-        let rawUrl = item.cover || item.image || "";
-        // 如果地址为空，直接给保底图，不走代理
-        if (!rawUrl) {
-            proxiedImg = 'image/default-cover.png';
-        } else {
-            // 彻底洗掉所有协议头和斜杠，只留纯域名路径
-            const cleanUrl = rawUrl.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-            var proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
-        }
-        
+        // --- 核心修复：混合代理模式 ---
+        const originalImg = item.cover || item.image || "";
+        // 1. 去掉所有干扰头
+        const cleanPath = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
+        // 2. 既然代理节点不行，我们直接利用豆瓣的备用域名 + Weserv 强制中转
+        const proxiedImg = `https://images.weserv.nl/?url=${cleanPath}&n=-1`; 
+
         card.innerHTML = `
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-<img src="${(item.cover || item.image || '').replace('img3.doubanio.com', 'img1.doubanio.com').replace('img1.doubanio.com', 'img2.doubanio.com')}" 
-     alt="${safeTitle}" 
-     class="w-full h-full object-cover" 
-     referrerpolicy="no-referrer"
-     onerror="this.src='https://images.weserv.nl/?url=' + encodeURIComponent(this.src);"
-     loading="lazy">
+                <img src="${proxiedImg}" 
                      alt="${safeTitle}" 
                      class="w-full h-full object-cover" 
+                     referrerpolicy="no-referrer"
                      onerror="this.src='image/default-cover.png';">
                 <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                     ★ ${item.rate || '0.0'}
