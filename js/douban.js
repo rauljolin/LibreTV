@@ -465,41 +465,37 @@ async function fetchDoubanData(url) {
 // 重新开始的修复：在渲染时直接强制通过稳定代理中转
 function renderDoubanCards(data, container) {
     const fragment = document.createDocumentFragment();
-    if (!data.subjects || data.subjects.length === 0) {
-        const emptyEl = document.createElement("div");
-        emptyEl.className = "col-span-full text-center py-8 text-pink-500";
-        emptyEl.textContent = "❌ 暂无数据";
-        fragment.appendChild(emptyEl);
-    } else {
-        data.subjects.forEach(item => {
-            const card = document.createElement("div");
-            card.className = "bg-[#111] rounded-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all shadow-md";
-            
-            const safeTitle = item.title.replace(/"/g, '&quot;');
-            
-            // --- 核心修复：在这里直接强行改写图片地址 ---
-            // 提取原图地址，并去掉协议头
-            const originalImg = item.cover || item.image;
-            const cleanUrl = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-            // 直接拼接目前最稳的 weserv 代理
-            const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
-            
-            card.innerHTML = `
-                <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${proxiedImg}" 
-                         alt="${safeTitle}" 
-                         class="w-full h-full object-cover" 
-                         onerror="this.src='image/default-cover.png';"
-                         loading="lazy">
-                    <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        ★ ${item.rate || '0.0'}
-                    </div>
-                </div>
-                <div class="p-2 text-center text-sm truncate text-white font-medium">${safeTitle}</div>
-            `;
-            fragment.appendChild(card);
-        });
+    if (!data || !data.subjects || data.subjects.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-pink-500">❌ 暂无数据</div>`;
+        return;
     }
+    
+    data.subjects.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bg-[#111] rounded-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all shadow-md";
+        
+        // 核心：强制转换所有豆瓣图片地址
+        const originalImg = item.cover || item.image || "";
+        const cleanUrl = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
+        // 换成这个最稳的镜像地址
+        const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}&default=https://flickzone.xyz/image/default-cover.png`;
+        
+        const safeTitle = (item.title || "未知").replace(/"/g, '&quot;');
+        
+        card.innerHTML = `
+            <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
+                <img src="${proxiedImg}" 
+                     alt="${safeTitle}" 
+                     class="w-full h-full object-cover" 
+                     onerror="this.src='image/default-cover.png';">
+                <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                    ★ ${item.rate || '0.0'}
+                </div>
+            </div>
+            <div class="p-2 text-center text-sm truncate text-white font-medium">${safeTitle}</div>
+        `;
+        fragment.appendChild(card);
+    });
     container.innerHTML = "";
     container.appendChild(fragment);
 }
