@@ -490,10 +490,10 @@ function renderDoubanCards(data, container) {
         
         card.innerHTML = `
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-<img src="https://img.vcmm.cn/${(item.cover || item.image || '').replace(/^https?:\/\//, '').replace(/^\/\//, '')}" 
+<img src="https://images.weserv.nl/?url=${(item.cover || item.image || '').split('://')[1] || ''}" 
      alt="${safeTitle}" 
      class="w-full h-full object-cover" 
-     onerror="this.src='https://images.weserv.nl/?url=' + this.src.replace('https://img.vcmm.cn/', '');"
+     onerror="this.src='image/default-cover.png';"
      loading="lazy">
                      alt="${safeTitle}" 
                      class="w-full h-full object-cover" 
