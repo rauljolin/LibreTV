@@ -468,40 +468,34 @@ function renderDoubanCards(data, container) {
     if (!data.subjects || data.subjects.length === 0) {
         const emptyEl = document.createElement("div");
         emptyEl.className = "col-span-full text-center py-8 text-pink-500";
-        emptyEl.textContent = "❌ 暂无数据，请稍后重试";
+        emptyEl.textContent = "❌ 暂无数据";
         fragment.appendChild(emptyEl);
     } else {
         data.subjects.forEach(item => {
             const card = document.createElement("div");
-            card.className = "bg-[#111] hover:bg-[#222] transition-all duration-300 rounded-lg overflow-hidden flex flex-col transform hover:scale-105 shadow-md";
+            card.className = "bg-[#111] rounded-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all shadow-md";
             
             const safeTitle = item.title.replace(/"/g, '&quot;');
-            const safeRate = item.rate || "0.0";
             
-            // --- 核心修复：直接强制中转，不走豆瓣原地址 ---
-            const originalCoverUrl = item.cover;
-            const cleanPath = originalCoverUrl.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-            // 使用目前最稳的 Weserv 节点
-            const proxiedUrl = `https://images.weserv.nl/?url=${cleanPath}`;
+            // --- 核心修复：在这里直接强行改写图片地址 ---
+            // 提取原图地址，并去掉协议头
+            const originalImg = item.cover || item.image;
+            const cleanUrl = originalImg.replace(/^https?:\/\//, '').replace(/^\/\//, '');
+            // 直接拼接目前最稳的 weserv 代理
+            const proxiedImg = `https://images.weserv.nl/?url=${cleanUrl}`;
             
             card.innerHTML = `
                 <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                    <img src="${proxiedUrl}" alt="${safeTitle}" 
-                        class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onerror="this.src='image/default-cover.png';"
-                        loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
-                    <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
-                        <span class="text-yellow-400">★</span> ${safeRate}
+                    <img src="${proxiedImg}" 
+                         alt="${safeTitle}" 
+                         class="w-full h-full object-cover" 
+                         onerror="this.src='image/default-cover.png';"
+                         loading="lazy">
+                    <div class="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        ★ ${item.rate || '0.0'}
                     </div>
                 </div>
-                <div class="p-2 text-center bg-[#111]">
-                    <button onclick="fillAndSearchWithDouban('${safeTitle}')" 
-                            class="text-sm font-medium text-white truncate w-full hover:text-pink-400 transition"
-                            title="${safeTitle}">
-                        ${safeTitle}
-                    </button>
-                </div>
+                <div class="p-2 text-center text-sm truncate text-white font-medium">${safeTitle}</div>
             `;
             fragment.appendChild(card);
         });
