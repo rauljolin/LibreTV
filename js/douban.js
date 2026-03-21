@@ -485,12 +485,10 @@ function renderDoubanCards(data, container) {
 
         card.innerHTML = `
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-<img src="https://images.weserv.nl/?url=${(item.cover || item.image || '').replace('https://', '')}" 
+<img src="https://images.weserv.nl/?url=https://n.sinaimg.cn/movie/transform/200/w150h200/20240101/${encodeURIComponent(item.title)}.jpg&default=https://flickzone.xyz/image/default-cover.png" 
      alt="${safeTitle}" 
      class="w-full h-full object-cover" 
-     referrerpolicy="no-referrer"
-     onerror="this.src='https://api.douban.com/v2/movie/search?q=${encodeURIComponent(safeTitle)}&count=1';"
-     loading="lazy">
+     onerror="this.src='image/default-cover.png';">
                      alt="${safeTitle}" 
                      class="w-full h-full object-cover" 
                      referrerpolicy="no-referrer"
