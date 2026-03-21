@@ -25,42 +25,39 @@
     
     <!-- Favicon -->
     <link rel="icon" href="https://images.icon-icons.com/38/PNG/512/retrotv_5520.png">
-    <script>
-        document.addEventListener('error', function (e) {
-            if (e.target.tagName.toLowerCase() === 'img') {
-                const img = e.target;
-                const src = img.getAttribute('src');
-                
-                // 排除无效地址，并标记已尝试，防止死循环
-                if (!src || img.dataset.tried === 'true' || src.includes('data:image')) return;
-                
-                // 提取纯净路径，处理多种协议开头
-                let cleanPath = src.replace(/^https?:\/\//, '').replace(/^\/\//, '');
-                
-                // 使用目前最稳定的全球 CDN 节点
-                const proxy = 'https://images.weserv.nl/?url=';
-
-                img.dataset.tried = 'true';
-                img.src = proxy + cleanPath;
-                
-                // 如果 Weserv 也失败，显示本地保底图
-                img.onerror = function() {
-                    img.src = 'image/default-cover.png';
-                };
-            }
-        }, true);
-
-        // 2. 强制唤醒：确保“豆瓣热门”入口默认开启
-        localStorage.setItem('doubanEnabled', 'true');
-        localStorage.setItem('passwordVerified', 'true');
-        window.__ENV__ = { PASSWORD: "" };
-    </script>
     <link rel="apple-touch-icon" href="https://images.icon-icons.com/38/PNG/512/retrotv_5520.png">
     <link rel="manifest" href="manifest.json">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://libretv.is-an.org/">
-    
+    <script>
+        (function() {
+            // 劫持所有的图片请求，在它们加载前改写地址
+            const originalCreateElement = document.createElement;
+            document.createElement = function(tagName) {
+                const element = originalCreateElement.apply(this, arguments);
+                if (tagName.toLowerCase() === 'img') {
+                    const originalSetter = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src').set;
+                    Object.defineProperty(element, 'src', {
+                        set: function(value) {
+                            if (value && value.includes('doubanio.com') && !value.includes('weserv.nl')) {
+                                // 提取路径并强制使用 Weserv 代理
+                                const cleanUrl = value.replace(/^https?:\/\//, '').replace(/^\/\//, '');
+                                value = `https://images.weserv.nl/?url=${cleanUrl}`;
+                            }
+                            originalSetter.call(this, value);
+                        }
+                    });
+                }
+                return element;
+            };
+        })();
+
+        // 强制初始化环境
+        localStorage.setItem('doubanEnabled', 'true');
+        localStorage.setItem('passwordVerified', 'true');
+        window.__ENV__ = { PASSWORD: "" };
+    </script>
     <script src="libs/tailwindcss.min.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -442,7 +439,7 @@
     <script src="js/api.js"></script>
     <script src="js/password.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/douban.js?v=20260321"></script>
+    <script src="js/douban.js"></script>
 
     <!-- PWA 注册 -->
     <script>
