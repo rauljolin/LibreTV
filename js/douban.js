@@ -490,7 +490,11 @@ function renderDoubanCards(data, container) {
         
         card.innerHTML = `
             <div class="relative w-full aspect-[2/3] overflow-hidden cursor-pointer" onclick="fillAndSearchWithDouban('${safeTitle}')">
-                <img src="${proxiedImg}" 
+<img src="https://images.weserv.nl/?url=${(item.cover || item.image || '').replace(/^https?:\/\//, '').replace(/^\/\//, '')}" 
+     alt="${safeTitle}" 
+     class="w-full h-full object-cover" 
+     onerror="this.src='image/default-cover.png';"
+     loading="lazy">
                      alt="${safeTitle}" 
                      class="w-full h-full object-cover" 
                      onerror="this.src='image/default-cover.png';">
